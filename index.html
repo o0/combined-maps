@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <link rel="stylesheet" href="lib/leaflet-0.7.3/leaflet.css" />
   <link rel="stylesheet" href="styles/main.css" />
+  <script src="http://api-maps.yandex.ru/2.0/?lang=en-US&load=package.map" type="text/javascript"></script>
   <title>Map service</title>
 </head>
 <body>
@@ -14,7 +15,9 @@
 <script src="out/app.js"></script>
 <script>
   (function() {
-    AppEntryPoint.init();
+    ymaps.ready(function() {
+      GeoApp.App.init();
+    });
   })();
 </script>
 

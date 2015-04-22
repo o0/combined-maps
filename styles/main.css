@@ -15,7 +15,10 @@ body {
 }
 
 .layout button {
+  padding-bottom: 5px;
+  padding-top: 5px;
   position: absolute;
-  right: 10px;
+  right: 30px;
   top: 10px;
+  zoom: 150%;
 }
