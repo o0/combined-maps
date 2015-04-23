@@ -5,6 +5,8 @@ module GeoApp {
     private yandexLayer = null;
     private trafficEnabled:boolean = false;
 
+    static TILE_SIZE = 256;
+
     constructor() {
       this.container = document.querySelector('.layout');
       this.map = window.L.map(this.container);
@@ -33,18 +35,14 @@ module GeoApp {
         this.yandexLayer.drawTile = function(canvas, tilePoint, zoom) {
           var ctx = canvas.getContext("2d");
           var image = new Image();
-          var latLng = MapUtils.tileToLatLng(tilePoint.x + 0.5, tilePoint.y + 0.5, zoom);
+          var latLng = MapUtils.tileToLatLng(tilePoint.x, tilePoint.y, zoom);
+          var ellipticalPoint = window.L.CRS.EPSG3395.latLngToPoint(latLng, zoom);
 
           image.src = [
-            // fixme: use this overlay url instead of Static API.
-            //'https://jgo.maps.yandex.net/1.1/tiles?l=trf,trfe&s=&lang=ru_RU',
-            //'&x=', tilePoint.x,
-            //'&y=', tilePoint.y,
-
-            'http://static-maps.yandex.ru/1.x/?l=trf&lang=ru_RU',
-            '&ll=', [latLng[1], latLng[0]].join(','),
+            'https://jgo.maps.yandex.net/1.1/tiles?l=trf,trfe&s=&lang=ru_RU',
+            '&x=', Math.round(ellipticalPoint.x / App.TILE_SIZE),
+            '&y=', Math.round(ellipticalPoint.y / App.TILE_SIZE),
             '&z=', zoom,
-            '&size=256,256',
             '&tm=', (new Date).getTime()
           ].join('');
 
@@ -70,19 +68,19 @@ module GeoApp {
   }
 
   class MapUtils {
-    static latLngToTile(lat:number, lng: number, zoom:number):Array<number> {
+    static latLngToTile(latLng:{lat: number; lng:number}, zoom:number):Array<number> {
       return [
-        (Math.ceil((lng + 180) / 360 * Math.pow(2,zoom))),
-        (Math.ceil((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom)))
+        (Math.ceil((latLng.lng + 180) / 360 * Math.pow(2,zoom))),
+        (Math.ceil((1 - Math.log(Math.tan(latLng.lat * Math.PI / 180) + 1 / Math.cos(latLng.lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom)))
       ];
     }
 
-    static tileToLatLng(x:number, y:number, zoom:number):Array<number> {
+    static tileToLatLng(x:number, y:number, zoom:number):{lat:number; lng:number} {
       var n = Math.PI - 2 * Math.PI * y / Math.pow(2, zoom);
-      return [
+      return window.L.latLng(
         (180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)))),
         (x / Math.pow(2, zoom) * 360-180)
-      ];
+      );
     }
   }
 }
